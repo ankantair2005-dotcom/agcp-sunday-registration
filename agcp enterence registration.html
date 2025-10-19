@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AG Church Poonamallee - Sunday Service Registration</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+<body class="bg-pink-100 font-sans">
+  <div class="max-w-6xl mx-auto p-6">
+    <div class="flex items-center mb-6">
+      <img src="logo1.png.png" alt="AGCPLOGO" class="w-50 h-24 rounded-xl mr-4">
+      <div>
+        <h1 class="text-2xl font-bold text-green-700">AG Church Poonamallee – Sunday Service Registration</h1>
+        <p class="text-gray-600 italic">Leading Souls Toward Heaven’s Kingdom.</p>
+      </div>
+    </div>
+
+    <!-- Form Section -->
+    <div class="bg-white rounded-2xl shadow-md p-6 mb-6">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+          <label class="block text-gray-700 font-semibold mb-1">Name</label>
+          <input type="text" id="Name" class="w-full border border-gray-300 rounded-lg p-2" placeholder="Enter name"> 
+        </div>
+
+        <div>
+             <label class="block text-gray-700 font-semibold mb-1">Service</label>
+          <input type="radio" id="1" name="service" value="1st" class="border border-gray-300 rounded-lg p-2">
+          <label for="1st">1st Service</label><br>
+          <input type="radio" id="2" name="service" value="2nd" class="border border-gray-300 rounded-lg p-2">
+          <label for="2nd">2nd Service</label><br>
+          <input type="radio" id="3" name="service" value="3rd" class="border border-gray-300 rounded-lg p-2">
+          <label for="3rd">3rd Service</label><br>
+          <input type="radio" id="4" name="service" value="4th" class="border border-gray-300 rounded-lg p-2">
+          <label for="4th">4th Service</label><br>
+          </div>
+          
+        <div>
+          <label class="block text-gray-700 font-semibold mb-1">Membership Type</label>
+          <input type="radio" id="new" name="memberType" value="NEW" class="border border-gray-300 rounded-lg p-2">
+          <label for="new">NEW</label><br>
+          <input type="radio" id="regular" name="memberType" value="REGULAR" class="border border-gray-300 rounded-lg p-2">
+          <label for="regular">REGULAR</label><br>
+        </div>
+
+        <div>
+          <label class="block text-gray-700 font-semibold mb-1">Date</label>
+          <input type="date" id="attendanceDate" class="w-full border border-gray-300 rounded-lg p-2">
+        </div>
+
+        <div>
+          <label class="block text-gray-700 font-semibold mb-1">Check-In Time</label>
+          <input type="time" id="checkInTime" class="w-full border border-gray-300 rounded-lg p-2">
+        </div>
+      </div>
+
+      <button onclick="submitAttendance()" class="mt-4 bg-gradient-to-r from-blue-600 to-green-500 text-white font-semibold py-2 px-6 rounded-lg hover:opacity-90">
+        ✅ Submit Attendance
+      </button>
+    </div>
+
+    <!-- Table Section -->
+    <div class="bg-white rounded-2xl shadow-md p-6">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-xl font-semibold text-green-700">📋 Attendance Records</h2>
+        <button onclick="confirmAdmin('clear')" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600">
+          🗑️ Clear All
+        </button>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="min-w-full border border-gray-300 text-center">
+          <thead class="bg-green-600 text-white">
+            <tr>
+              <th class="py-2 px-4 border">#</th>
+              <th class="py-2 px-4 border">Name</th>
+              <th class="py-2 px-4 border">Service</th>
+              <th class="py-2 px-4 border">Membership</th>
+              <th class="py-2 px-4 border">Date</th>
+              <th class="py-2 px-4 border">Check-In Time</th>
+              <th class="py-2 px-4 border">Action</th>
+            </tr>
+          </thead>
+          <tbody id="attendanceTable" class="text-gray-800"></tbody>
+        </table>
+      </div>
+
+      <button onclick="downloadExcel()" class="mt-4 bg-yellow-700 text-white font-semibold py-2 px-6 rounded-lg hover:bg-yellow-900">
+        ⬇️ Download Excel File
+      </button>
+    </div>
+
+    <p class="text-center text-gray-900 mt-6 text-sm">AG Church Poonamallee Media • @agcp media</p>
+  </div>
+
+  <script>
+    const ADMIN_PIN = "4321";
+    let records = JSON.parse(localStorage.getItem('attendanceRecordsagcp')) || [];
+    displayRecords();
+
+    function submitAttendance() {
+      const name = document.getElementById('Name').value.trim();
+      const service = document.querySelector('input[name="service"]:checked')?.value || "";
+      const date = document.getElementById('attendanceDate').value;
+      const checkIn = document.getElementById('checkInTime').value;
+      const membership = document.querySelector('input[name="memberType"]:checked')?.value || "";
+
+      if (!name || !service || !membership || !date || !checkIn) {
+        alert("⚠️ Please fill all fields!");
+        return;
+      }
+
+      const record = { name, service, membership, date, checkIn };
+      records.push(record);
+      localStorage.setItem('attendanceRecordsagcp', JSON.stringify(records));
+      displayRecords();
+
+      // Reset form
+      document.getElementById('Name').value = '';
+      document.querySelectorAll('input[name=""]').forEach(r => r.checked = false);
+      document.querySelectorAll('input[name="memberType"]').forEach(r => r.checked = false);
+      document.getElementById('attendanceDate').value = '';
+      document.getElementById('checkInTime').value = '';
+    }
+
+    function displayRecords() {
+      const table = document.getElementById('attendanceTable');
+      table.innerHTML = '';
+      records.forEach((rec, index) => {
+        const row = `<tr class="border hover:bg-green-50">
+          <td class="py-2 px-4 border">${index + 1}</td>
+          <td class="py-2 px-4 border">${rec.name}</td>
+          <td class="py-2 px-4 border">${rec.service}</td>
+          <td class="py-2 px-4 border">${rec.membership}</td>
+          <td class="py-2 px-4 border">${rec.date}</td>
+          <td class="py-2 px-4 border">${rec.checkIn}</td>
+          <td class="py-2 px-4 border">
+            <button onclick="confirmAdmin('delete', ${index})" class="bg-red-900 text-white px-3 py-1 rounded hover:bg-red-800">
+              Delete
+            </button>
+          </td>
+        </tr>`;
+        table.innerHTML += row;
+      });
+    }
+
+    function confirmAdmin(action, index = null) {
+      const pin = prompt("🔐 Enter admin PIN to continue:");
+      if (pin === ADMIN_PIN) {
+        if (action === 'delete') deleteRecord(index);
+        if (action === 'clear') clearAllRecords();
+      } else if (pin !== null) {
+        alert("❌ Incorrect PIN!");
+      }
+    }
+
+    function deleteRecord(index) {
+      records.splice(index, 1);
+      localStorage.setItem('attendanceRecordsagcp', JSON.stringify(records));
+      displayRecords();
+    }
+
+    function clearAllRecords() {
+      if (confirm("⚠️ Are you sure you want to clear all records? This cannot be undone.")) {
+        records = [];
+        localStorage.removeItem('attendanceRecordsagcp');
+        displayRecords();
+      }
+    }
+
+    function downloadExcel() {
+      if (records.length === 0) {
+        alert("No records to download!");
+        return;
+      }
+      const ws = XLSX.utils.json_to_sheet(records);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Attendance");
+      XLSX.writeFile(wb, "attendanceRecordsagcp.xlsx");
+    }
+  </script>
+</body>
+</html>
